@@ -1,16 +1,23 @@
 <?php
-/**
- * Root Router for School Attendance Management System
- */
-$sub_index = __DIR__ . '/School_Attendance_Management_System/attendance/index.php';
+	error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+	ini_set('display_errors', '1');
+	$currDir = dirname(__FILE__);
+	include("{$currDir}/defaultLang.php");
+	include("{$currDir}/language.php");
+	include("{$currDir}/lib.php");
 
-if (file_exists($sub_index)) {
-    $uri = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
-    header("Location: {$uri}/School_Attendance_Management_System/attendance/index.php");
-    exit;
-} else {
-    // If DocumentRoot is set to attendance folder directly
-    header("Location: index.php");
-    exit;
-}
-?>
+	$x = new DataList;
+	$x->TableTitle = $Translation['homepage'];
+	$tablesPerRow = 2;
+	$arrTables = getTableList();
+
+	// according to provided GET parameters, either log out, show login form (possibly with a failed login message), or show homepage
+	if(isset($_GET['signOut'])){
+		logOutUser();
+		redirect("index.php?signIn=1");
+	}elseif(isset($_GET['loginFailed']) || isset($_GET['signIn'])){
+		if(!headers_sent() && isset($_GET['loginFailed'])) header('HTTP/1.0 403 Forbidden');
+		include("{$currDir}/login.php");
+	}else{
+		include("{$currDir}/home.php");
+	}

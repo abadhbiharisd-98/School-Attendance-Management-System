@@ -581,14 +581,39 @@
 			'membership_userpermissions' => "CREATE TABLE IF NOT EXISTS membership_userpermissions (permissionID int unsigned NOT NULL auto_increment,  memberID varchar(20) NOT NULL, tableName varchar(100), allowInsert tinyint, allowView tinyint NOT NULL DEFAULT '0', allowEdit tinyint NOT NULL DEFAULT '0', allowDelete tinyint NOT NULL DEFAULT '0', PRIMARY KEY (permissionID)) CHARSET " . mysql_charset 
 		);
 
-		// get db tables
+				// get db tables
 		$tables = array();
 		$res = sql("show tables", $eo);
 
-		if(!$res){
-			include_once(dirname(__FILE__) . '/../header.php');
-			echo $eo['error'];
-			include_once(dirname(__FILE__) . '/../footer.php');
+		if(!$res || !($res instanceof mysqli_result)){
+			if(!headers_sent()){
+				header('Content-Type: text/html; charset=utf-8');
+			}
+			?>
+			<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="utf-8">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<title>Setup Required | School Attendance Management System</title>
+				<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+			</head>
+			<body class="bg-light d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+				<div class="card shadow p-4 text-center" style="max-width: 550px; width: 90%;">
+					<h3 class="fw-bold text-primary mb-3">🏫 School Attendance System</h3>
+					<div class="alert alert-warning text-start">
+						<h6 class="fw-bold mb-1">⚠️ Database Setup Required</h6>
+						<p class="small mb-0">The application is running, but database tables are not yet initialized or connected.</p>
+					</div>
+					<div class="d-grid gap-2 mb-3">
+						<a href="db_setup.php" class="btn btn-primary btn-lg fw-bold shadow-sm">🚀 Open 1-Click Database Setup (db_setup.php)</a>
+						<a href="index.php?signIn=1" class="btn btn-outline-secondary">Go to Sign In Page</a>
+					</div>
+					<small class="text-muted">Aiven Cloud MySQL SSL & Render Deployment Ready</small>
+				</div>
+			</body>
+			</html>
+			<?php
 			exit;
 		}
 
@@ -1220,34 +1245,43 @@
 		}
 	}
 	#########################################################
-	function getLoggedMemberID(){
-		if($_SESSION['memberID']!=''){
+		function getLoggedMemberID(){
+		if(isset($_SESSION['memberID']) && $_SESSION['memberID'] !== '' && $_SESSION['memberID'] !== 0 && $_SESSION['memberID'] !== '0'){
 			return strtolower($_SESSION['memberID']);
-		}else{
-			if(!setAnonymousAccess()) return false;
-			return getLoggedMemberID();
 		}
+		setAnonymousAccess();
+		if(isset($_SESSION['memberID']) && $_SESSION['memberID'] !== '' && $_SESSION['memberID'] !== 0 && $_SESSION['memberID'] !== '0'){
+			return strtolower($_SESSION['memberID']);
+		}
+		return 'guest';
 	}
 	#########################################################
 	function setAnonymousAccess(){
 		$adminConfig = config('adminConfig');
-		$anon_group_safe = addslashes($adminConfig['anonymousGroup']);
-		$anon_user_safe = strtolower(addslashes($adminConfig['anonymousMember']));
+		$anon_group_safe = addslashes($adminConfig['anonymousGroup'] ?? 'anonymous');
+		$anon_user_safe = strtolower(addslashes($adminConfig['anonymousMember'] ?? 'guest'));
 
 		$eo = array('silentErrors' => true);
 
 		$res = sql("select groupID from membership_groups where name='{$anon_group_safe}'", $eo);
-		if(!$res){ return false; }
-		$row = db_fetch_array($res); $anonGroupID = $row[0];
-
-		$_SESSION['memberGroupID'] = ($anonGroupID ? $anonGroupID : 0);
+		if(!$res || !($res instanceof mysqli_result)){
+			$_SESSION['memberGroupID'] = 1;
+			$_SESSION['memberID'] = $anon_user_safe;
+			return false;
+		}
+		$row = db_fetch_array($res);
+		$anonGroupID = $row ? $row[0] : 1;
+		$_SESSION['memberGroupID'] = $anonGroupID;
 
 		$res = sql("select lcase(memberID) from membership_users where lcase(memberID)='{$anon_user_safe}' and groupID='{$anonGroupID}'", $eo);
-		if(!$res){ return false; }
-		$row = db_fetch_array($res); $anonMemberID = $row[0];
+		if(!$res || !($res instanceof mysqli_result)){
+			$_SESSION['memberID'] = $anon_user_safe;
+			return false;
+		}
+		$row = db_fetch_array($res);
+		$anonMemberID = ($row && !empty($row[0])) ? $row[0] : $anon_user_safe;
 
-		$_SESSION['memberID'] = ($anonMemberID ? $anonMemberID : 0);
-
+		$_SESSION['memberID'] = $anonMemberID;
 		return true;
 	}
 	#########################################################

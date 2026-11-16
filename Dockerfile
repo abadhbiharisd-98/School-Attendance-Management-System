@@ -1,6 +1,7 @@
+# Render PHP 8.2 Apache Deployment Dockerfile
 FROM php:8.2-apache
 
-# Install system dependencies & libraries needed for PHP extensions
+# Install required system libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev \
     libjpeg-dev \
@@ -9,25 +10,46 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     unzip \
     curl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) mysqli pdo_mysql gd zip \
-    && a2enmod rewrite headers \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
+# Configure and install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) mysqli pdo_mysql gd zip
+
+# Enable Apache modules: rewrite, headers
+RUN a2enmod rewrite headers
+
+# Configure PHP output buffering and error handling
+RUN echo "output_buffering = 4096" > /usr/local/etc/php/conf.d/custom-php.ini \
+    && echo "display_errors = On" >> /usr/local/etc/php/conf.d/custom-php.ini \
+    && echo "log_errors = On" >> /usr/local/etc/php/conf.d/custom-php.ini \
+    && echo "error_reporting = E_ALL & ~E_NOTICE & ~E_DEPRECATED" >> /usr/local/etc/php/conf.d/custom-php.ini
+
+# Reverse proxy configurations: prevent internal port leaking in redirects
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf \
+    && echo "UseCanonicalName Off" >> /etc/apache2/apache2.conf \
+    && echo "UseCanonicalPhysicalPort Off" >> /etc/apache2/apache2.conf
+
+# Allow .htaccess in document root
+RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
+
+# Set application directory
 WORKDIR /var/www/html
 
-# Copy application files
+# Copy all application files
 COPY . /var/www/html/
 
-# Copy startup script and make executable
+# Copy and setup start.sh
 COPY start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh && \
-    chown -R www-data:www-data /var/www/html && \
-    chmod -R 755 /var/www/html
+RUN tr -d '\r' < /usr/local/bin/start.sh > /usr/local/bin/start_clean.sh \
+    && mv /usr/local/bin/start_clean.sh /usr/local/bin/start.sh \
+    && chmod +x /usr/local/bin/start.sh
 
-# Expose Render default port
+# Set directory permissions for web server
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
 EXPOSE 10000 80
 
-# Execute start.sh
 CMD ["/usr/local/bin/start.sh"]

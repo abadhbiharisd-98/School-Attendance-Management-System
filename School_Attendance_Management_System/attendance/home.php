@@ -152,7 +152,14 @@
 			$i++;
 		}
 	}else{
-		?><script>window.location='index.php?signIn=1';</script><?php
+		if(!headers_sent()){
+			@header('Location: index.php?signIn=1');
+		}
+		echo '<div class="alert alert-info text-center" style="margin: 50px auto; max-width: 500px;">';
+		echo '<h4>Welcome to School Attendance Management System</h4>';
+		echo '<p>Please <a href="index.php?signIn=1" class="btn btn-primary btn-sm">Sign In</a> to access your attendance records.</p>';
+		echo '</div>';
+		echo '<script>window.location="index.php?signIn=1";</script>';
 	}
 ?>
 

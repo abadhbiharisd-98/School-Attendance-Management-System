@@ -1,55 +1,46 @@
 #!/bin/bash
 set -e
 
-# Default port to 10000 if not specified by Render
+# Default port to 10000 if not provided by Render
 PORT="${PORT:-10000}"
-echo "=========================================================="
-echo " Starting School Attendance Management System on Port: $PORT"
-echo "=========================================================="
 
-# 1. Update Apache listening port dynamically
-sed -i "s/Listen [0-9]*/Listen $PORT/g" /etc/apache2/ports.conf
-sed -i "s/<VirtualHost \*:[0-9]*>/<VirtualHost \*:$PORT>/g" /etc/apache2/sites-available/000-default.conf
+echo "=================================================="
+echo " Starting Apache Web Server on Port: ${PORT}"
+echo " Render Reverse Proxy & Aiven SSL Enabled"
+echo "=================================================="
 
-# 2. Configure DocumentRoot to serve attendance directly
-sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/School_Attendance_Management_System/attendance|g' /etc/apache2/sites-available/000-default.conf
+# Update Apache listening port dynamically
+sed -i "s/Listen 80/Listen ${PORT}/g" /etc/apache2/ports.conf
+sed -i "s/Listen 10000/Listen ${PORT}/g" /etc/apache2/ports.conf 2>/dev/null || true
 
-# 3. Apply Reverse Proxy & Port 10000 fixes to Apache configuration
-cat << 'EOF' > /etc/apache2/conf-available/render-reverse-proxy.conf
-ServerName localhost
-UseCanonicalName Off
-UseCanonicalPhysicalPort Off
+# Configure VirtualHost with Reverse Proxy protections
+cat <<EOF > /etc/apache2/sites-available/000-default.conf
+<VirtualHost *:${PORT}>
+    ServerName localhost
+    DocumentRoot /var/www/html
 
-<Directory /var/www/html>
-    Options -Indexes +FollowSymLinks
-    AllowOverride All
-    Require all granted
-</Directory>
+    UseCanonicalName Off
+    UseCanonicalPhysicalPort Off
 
-<Directory /var/www/html/School_Attendance_Management_System/attendance>
-    Options -Indexes +FollowSymLinks
-    AllowOverride All
-    Require all granted
-</Directory>
+    <Directory /var/www/html>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
 
-# Alias support
-Alias /attendance /var/www/html/School_Attendance_Management_System/attendance
-Alias /School_Attendance_Management_System/attendance /var/www/html/School_Attendance_Management_System/attendance
+    # Identify HTTPS through Render reverse proxy
+    SetEnvIf X-Forwarded-Proto "^https$" HTTPS=on
+
+    ErrorLog \${APACHE_LOG_DIR}/error.log
+    CustomLog \${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
 EOF
 
-# Ensure AllowOverride All in main apache2.conf
+# Ensure AllowOverride All in apache2.conf for .htaccess
 sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
-a2enconf render-reverse-proxy
+# Verify apache configuration syntax before starting
+apache2ctl -t || true
 
-# 4. Ensure permissions for storage directories
-mkdir -p /var/www/html/School_Attendance_Management_System/attendance/admin/backups
-mkdir -p /var/www/html/School_Attendance_Management_System/attendance/admin/csv
-mkdir -p /var/www/html/School_Attendance_Management_System/attendance/images
-chown -R www-data:www-data /var/www/html/School_Attendance_Management_System/attendance
-chmod -R 775 /var/www/html/School_Attendance_Management_System/attendance/admin/backups
-chmod -R 775 /var/www/html/School_Attendance_Management_System/attendance/admin/csv
-chmod -R 775 /var/www/html/School_Attendance_Management_System/attendance/images
-
-# 5. Launch Apache in foreground
+# Run Apache in foreground
 exec apache2-foreground

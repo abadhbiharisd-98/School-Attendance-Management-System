@@ -3,7 +3,8 @@
 // Download AppGini for free from https://bigprof.com/appgini/download/
 
 
-error_reporting(E_ERROR | E_WARNING | E_PARSE);
+error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+ini_set('display_errors', '1');
 
 // PHP 8 Compatibility Polyfills
 if(!function_exists('get_magic_quotes_gpc')){
