@@ -27,20 +27,17 @@ A robust, web-based School Attendance Management System upgraded for **PHP 8.2**
 
 ---
 
-## ⚙️ Aiven Cloud MySQL Environment Variables
+## ⚙️ Aiven Cloud MySQL Configuration
 
-Configure these environment variables in your **Render Web Service Dashboard** (under *Environment* tab) or use `render.yaml`:
-
-| Variable | Description | Example / Default |
-|---|---|---|
-| `DB_SERVER` | Aiven MySQL Service Host | `mysql-xxxx-yourproject.aivencloud.com` |
-| `DB_PORT` | Custom 5-digit Aiven Port | `26284` |
-| `DB_USERNAME` | Database User | `avnadmin` |
-| `DB_PASSWORD` | Aiven Database Password | `AVNS_...` |
-| `DB_NAME` | Database Name | `defaultdb` (or `attendance_management`) |
-| `DB_SSL` | Enforce SSL Encryption | `true` *(Required by Aiven)* |
-| `BASE_URL` | Live Render App URL | `https://your-service.onrender.com` |
-| `PORT` | Dynamic Port assigned by Render | `10000` *(Auto-assigned)* |
+| Variable | Configured Value |
+|---|---|
+| `DB_SERVER` | `mysql-32d19a6e-abadhbihari-33eb.f.aivencloud.com` |
+| `DB_PORT` | `12893` |
+| `DB_USERNAME` | `avnadmin` |
+| `DB_PASSWORD` | *(Configured via Render Environment Variables / Auto-configured)* |
+| `DB_NAME` | `school_attendance` |
+| `DB_SSL` | `true` *(Enforced by Aiven)* |
+| `BASE_URL` | `https://school-attendance-management-system-483x.onrender.com` |
 
 ---
 

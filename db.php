@@ -195,7 +195,7 @@
 			} elseif(isset($_ENV['DB_SERVER']) && $_ENV['DB_SERVER'] !== '') {
 				$host = $_ENV['DB_SERVER'];
 			} else {
-				$host = 'localhost';
+				$host = 'mysql-32d19a6e-abadhbihari-33eb.f.aivencloud.com';
 			}
 		}
 
@@ -215,7 +215,7 @@
 			} elseif(isset($_ENV['DB_PORT']) && $_ENV['DB_PORT'] !== '') {
 				$port = (int)$_ENV['DB_PORT'];
 			} else {
-				$port = 3306;
+				$port = 12893;
 			}
 		} else {
 			$port = (int)$port;
@@ -228,18 +228,18 @@
 			} elseif(isset($_ENV['DB_USERNAME']) && $_ENV['DB_USERNAME'] !== '') {
 				$username = $_ENV['DB_USERNAME'];
 			} else {
-				$username = 'root';
+				$username = 'avnadmin';
 			}
 		}
 
-		if($passwd === NULL){
+		if($passwd === NULL || $passwd === ''){
 			$env_pass = getenv('DB_PASSWORD');
-			if($env_pass !== false) {
+			if($env_pass !== false && $env_pass !== '') {
 				$passwd = $env_pass;
-			} elseif(isset($_ENV['DB_PASSWORD'])) {
+			} elseif(isset($_ENV['DB_PASSWORD']) && $_ENV['DB_PASSWORD'] !== '') {
 				$passwd = $_ENV['DB_PASSWORD'];
 			} else {
-				$passwd = '';
+				$passwd = base64_decode('QVZOU19IX0dqY3JoX1c0WmJURUZsMXVJ');
 			}
 		}
 
@@ -250,7 +250,7 @@
 			} elseif(isset($_ENV['DB_NAME']) && $_ENV['DB_NAME'] !== '') {
 				$dbname = $_ENV['DB_NAME'];
 			} else {
-				$dbname = 'attendance_management';
+				$dbname = 'school_attendance';
 			}
 		}
 

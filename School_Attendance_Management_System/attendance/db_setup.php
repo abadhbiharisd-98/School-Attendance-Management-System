@@ -12,11 +12,11 @@ if(function_exists('mysqli_report')){ @mysqli_report(MYSQLI_REPORT_OFF); }
 if(!function_exists('get_magic_quotes_gpc')){ function get_magic_quotes_gpc(){ return false; } }
 
 // Resolve environment defaults
-$default_host = getenv('DB_SERVER') ?: (isset($_ENV['DB_SERVER']) ? $_ENV['DB_SERVER'] : 'localhost');
-$default_port = getenv('DB_PORT') ?: (isset($_ENV['DB_PORT']) ? $_ENV['DB_PORT'] : '26284');
+$default_host = getenv('DB_SERVER') ?: (isset($_ENV['DB_SERVER']) ? $_ENV['DB_SERVER'] : 'mysql-32d19a6e-abadhbihari-33eb.f.aivencloud.com');
+$default_port = getenv('DB_PORT') ?: (isset($_ENV['DB_PORT']) ? $_ENV['DB_PORT'] : '12893');
 $default_user = getenv('DB_USERNAME') ?: (isset($_ENV['DB_USERNAME']) ? $_ENV['DB_USERNAME'] : 'avnadmin');
-$default_pass = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : (isset($_ENV['DB_PASSWORD']) ? $_ENV['DB_PASSWORD'] : '');
-$default_name = getenv('DB_NAME') ?: (isset($_ENV['DB_NAME']) ? $_ENV['DB_NAME'] : 'defaultdb');
+$default_pass = (getenv('DB_PASSWORD') !== false && getenv('DB_PASSWORD') !== '') ? getenv('DB_PASSWORD') : (isset($_ENV['DB_PASSWORD']) && $_ENV['DB_PASSWORD'] !== '' ? $_ENV['DB_PASSWORD'] : base64_decode('QVZOU19IX0dqY3JoX1c0WmJURUZsMXVJ'));
+$default_name = getenv('DB_NAME') ?: (isset($_ENV['DB_NAME']) ? $_ENV['DB_NAME'] : 'school_attendance');
 $default_ssl  = getenv('DB_SSL') ?: (isset($_ENV['DB_SSL']) ? $_ENV['DB_SSL'] : 'true');
 
 $host = isset($_POST['host']) ? trim($_POST['host']) : $default_host;
