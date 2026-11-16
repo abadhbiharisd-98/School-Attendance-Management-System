@@ -1239,11 +1239,11 @@
 	}
 	#########################################################
 	function getLoggedGroupID(){
-		if($_SESSION['memberGroupID']!=''){
+		if(!empty($_SESSION['memberGroupID'])){
 			return $_SESSION['memberGroupID'];
 		}else{
-			if(!setAnonymousAccess()) return false;
-			return getLoggedGroupID();
+			setAnonymousAccess();
+			return !empty($_SESSION['memberGroupID']) ? $_SESSION['memberGroupID'] : 1;
 		}
 	}
 	#########################################################

@@ -73,8 +73,8 @@
 		$groups = array();
 		foreach($all_groups as $grp){
 			foreach($tables as $tn => $td){
-				if($td[3] && $td[3] == $grp) $groups[$grp][] = $tn;
-				if(!$td[3]) $groups[0][] = $tn;
+				if(isset($td[3]) && $td[3] == $grp) $groups[$grp][] = $tn;
+				if(empty($td[3])) $groups[0][] = $tn;
 			}
 		}
 
@@ -89,46 +89,55 @@
 
 		$groupID = getLoggedGroupID();
 		$memberID = makeSafe(getLoggedMemberID());
+		$eo = array('silentErrors' => true);
 		$res_group = sql("select tableName, allowInsert, allowView, allowEdit, allowDelete from membership_grouppermissions where groupID='{$groupID}'", $eo);
 		$res_user = sql("select tableName, allowInsert, allowView, allowEdit, allowDelete from membership_userpermissions where lcase(memberID)='{$memberID}'", $eo);
 
-		while($row = db_fetch_assoc($res_group)){
-			$table_permissions[$row['tableName']] = array(
-				1 => intval($row['allowInsert']),
-				2 => intval($row['allowView']),
-				3 => intval($row['allowEdit']),
-				4 => intval($row['allowDelete']),
-				'insert' => intval($row['allowInsert']),
-				'view' => intval($row['allowView']),
-				'edit' => intval($row['allowEdit']),
-				'delete' => intval($row['allowDelete'])
-			);
+		if($res_group && ($res_group instanceof mysqli_result)){
+			while($row = db_fetch_assoc($res_group)){
+				$table_permissions[$row['tableName']] = array(
+					1 => intval($row['allowInsert']),
+					2 => intval($row['allowView']),
+					3 => intval($row['allowEdit']),
+					4 => intval($row['allowDelete']),
+					'insert' => intval($row['allowInsert']),
+					'view' => intval($row['allowView']),
+					'edit' => intval($row['allowEdit']),
+					'delete' => intval($row['allowDelete'])
+				);
+			}
 		}
 
 		// user-specific permissions, if specified, overwrite his group permissions
-		while($row = db_fetch_assoc($res_user)){
-			$table_permissions[$row['tableName']] = array(
-				1 => intval($row['allowInsert']),
-				2 => intval($row['allowView']),
-				3 => intval($row['allowEdit']),
-				4 => intval($row['allowDelete']),
-				'insert' => intval($row['allowInsert']),
-				'view' => intval($row['allowView']),
-				'edit' => intval($row['allowEdit']),
-				'delete' => intval($row['allowDelete'])
-			);
+		if($res_user && ($res_user instanceof mysqli_result)){
+			while($row = db_fetch_assoc($res_user)){
+				$table_permissions[$row['tableName']] = array(
+					1 => intval($row['allowInsert']),
+					2 => intval($row['allowView']),
+					3 => intval($row['allowEdit']),
+					4 => intval($row['allowDelete']),
+					'insert' => intval($row['allowInsert']),
+					'view' => intval($row['allowView']),
+					'edit' => intval($row['allowEdit']),
+					'delete' => intval($row['allowDelete'])
+				);
+			}
 		}
 
 		// if user has any type of access, set 'access' flag
 		foreach($table_permissions as $t => $p){
 			$table_permissions[$t]['access'] = $table_permissions[$t][0] = false;
 
-			if($p['insert'] || $p['view'] || $p['edit'] || $p['delete']){
+			if(!empty($p['insert']) || !empty($p['view']) || !empty($p['edit']) || !empty($p['delete'])){
 				$table_permissions[$t]['access'] = $table_permissions[$t][0] = true;
 			}
 		}
 
-		return $table_permissions[$tn];
+		$default_perm = array(
+			0 => false, 1 => 0, 2 => 0, 3 => 0, 4 => 0,
+			'insert' => 0, 'view' => 0, 'edit' => 0, 'delete' => 0, 'access' => false
+		);
+		return isset($table_permissions[$tn]) ? $table_permissions[$tn] : $default_perm;
 	}
 
 	#########################################################
