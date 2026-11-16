@@ -566,6 +566,10 @@
 		if($executed) return;
 		$executed = true;
 
+		if(!empty($_SESSION['membership_setup_verified'])){
+			return;
+		}
+
 		/* abort if current page is one of the following exceptions */
 		$exceptions = array('pageEditMember.php', 'membership_passwordReset.php', 'membership_profile.php', 'membership_signup.php', 'pageChangeMemberStatus.php', 'pageDeleteGroup.php', 'pageDeleteMember.php', 'pageEditGroup.php', 'pageEditMemberPermissions.php', 'pageRebuildFields.php', 'pageSettings.php');
 		if(in_array(basename($_SERVER['PHP_SELF']), $exceptions)) return;
@@ -622,10 +626,17 @@
 		while($row = db_fetch_array($res)) $tables[] = $row[0];
 
 		// check if membership tables exist or not
+		$all_exist = true;
 		foreach($membership_tables as $tn => $tdef){
 			if(!in_array($tn, $tables)){
+				$all_exist = false;
 				sql($tdef, $eo);
 			}
+		}
+
+		if($all_exist){
+			$_SESSION['membership_setup_verified'] = true;
+			return;
 		}
 
 		// check membership_users definition
