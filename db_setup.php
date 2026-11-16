@@ -147,7 +147,7 @@ if(isset($_POST['action']) && $_POST['action'] === 'import'){
         }
 
         // Split by semicolon (preserving quotes)
-        $tokens = preg_split('/;(?=(?:[^'"`]*(['"`])[^'"`]*\1)*[^'"`]*$)/', $clean_sql);
+        $tokens = preg_split('/;\s*(?:\r\n|\r|\n|$)/', $clean_sql);
         foreach($tokens as $t){
             $t = trim($t);
             if($t !== ''){
