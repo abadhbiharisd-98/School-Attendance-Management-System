@@ -364,9 +364,9 @@
 
 		$adminConfig = config('adminConfig');
 
-		if($_SESSION['adminUsername']!=''){
+		if(!empty($_SESSION['adminUsername'])){
 			return $_SESSION['adminUsername'];
-		}elseif($_SESSION['memberID']==$adminConfig['adminUsername']){
+		}elseif(isset($_SESSION['memberID']) && isset($adminConfig['adminUsername']) && $_SESSION['memberID']==$adminConfig['adminUsername']){
 			$_SESSION['adminUsername']=$_SESSION['memberID'];
 			return $_SESSION['adminUsername'];
 		}else{
@@ -646,11 +646,11 @@
 			while($row = db_fetch_assoc($res)) $membership_userrecords[$row['Key_name']][$row['Seq_in_index']] = $row;
 		}
 
-		if(!$membership_userrecords['pkValue'][1]) @db_query("ALTER TABLE membership_userrecords ADD INDEX pkValue (pkValue)");
-		if(!$membership_userrecords['tableName'][1]) @db_query("ALTER TABLE membership_userrecords ADD INDEX tableName (tableName)");
-		if(!$membership_userrecords['memberID'][1]) @db_query("ALTER TABLE membership_userrecords ADD INDEX memberID (memberID)");
-		if(!$membership_userrecords['groupID'][1]) @db_query("ALTER TABLE membership_userrecords ADD INDEX groupID (groupID)");
-		if(!$membership_userrecords['tableName_pkValue'][1] || !$membership_userrecords['tableName_pkValue'][2]) @db_query("ALTER IGNORE TABLE membership_userrecords ADD UNIQUE INDEX tableName_pkValue (tableName, pkValue)");
+		if(!isset($membership_userrecords['pkValue'][1])) @db_query("ALTER TABLE membership_userrecords ADD INDEX pkValue (pkValue)");
+		if(!isset($membership_userrecords['tableName'][1])) @db_query("ALTER TABLE membership_userrecords ADD INDEX tableName (tableName)");
+		if(!isset($membership_userrecords['memberID'][1])) @db_query("ALTER TABLE membership_userrecords ADD INDEX memberID (memberID)");
+		if(!isset($membership_userrecords['groupID'][1])) @db_query("ALTER TABLE membership_userrecords ADD INDEX groupID (groupID)");
+		if(!isset($membership_userrecords['tableName_pkValue'][1]) || !isset($membership_userrecords['tableName_pkValue'][2])) @db_query("ALTER TABLE membership_userrecords ADD UNIQUE INDEX tableName_pkValue (tableName, pkValue)");
 
 		// retreive anonymous and admin groups and their permissions
 		$anon_group = $adminConfig['anonymousGroup'];

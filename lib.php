@@ -119,7 +119,7 @@ include("$currDir/admin/incFunctions.php");
 		}
 		$_REQUEST['SortField'] = substr($_REQUEST['SortField'], 0, -2 - strlen($sd));
 		$_REQUEST['SortDirection'] = $sd;
-	}elseif($_REQUEST['apply_sorting']){
+	}elseif(!empty($_REQUEST['apply_sorting'])){
 		/* no sorting and came from filters page .. so clear sorting */
 		$_REQUEST['SortField'] = $_REQUEST['SortDirection'] = '';
 	}

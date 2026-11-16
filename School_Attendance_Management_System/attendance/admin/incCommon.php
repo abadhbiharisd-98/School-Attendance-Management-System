@@ -71,7 +71,9 @@
 	// is there a logged user?
 	if(!$uname=getLoggedAdmin()){
 		// is there a user trying to log in?
-		if(!checkUser($_POST['username'], $_POST['password'])){
+		$postUser = isset($_POST['username']) ? $_POST['username'] : '';
+		$postPass = isset($_POST['password']) ? $_POST['password'] : '';
+		if(empty($postUser) || !checkUser($postUser, $postPass)){
 			// display login form
 			?><META HTTP-EQUIV="Refresh" CONTENT="0;url=../index.php?signIn=1"><?php
 			exit;

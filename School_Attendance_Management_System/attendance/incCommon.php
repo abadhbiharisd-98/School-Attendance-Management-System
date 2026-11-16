@@ -240,16 +240,17 @@
 	#########################################################
 
 	function logInMember(){
+		global $adminConfig;
 		$redir = 'index.php';
-		if($_POST['signIn'] != ''){
-			if($_POST['username'] != '' && $_POST['password'] != ''){
+		if(!empty($_POST['signIn'])){
+			if(!empty($_POST['username']) && !empty($_POST['password'])){
 				$username = makeSafe(strtolower($_POST['username']));
 				$password = md5($_POST['password']);
 
 				if(sqlValue("select count(1) from membership_users where lcase(memberID)='$username' and passMD5='$password' and isApproved=1 and isBanned=0")==1){
 					$_SESSION['memberID']=$username;
 					$_SESSION['memberGroupID']=sqlValue("select groupID from membership_users where lcase(memberID)='$username'");
-					if($_POST['rememberMe']==1){
+					if(!empty($_POST['rememberMe'])){
 						@setcookie('Attendance_Management_System_rememberMe', md5($username.$password), time()+86400*30);
 					}else{
 						@setcookie('Attendance_Management_System_rememberMe', '', time()-86400*30);
@@ -272,16 +273,16 @@
 			if(function_exists('login_failed')){
 				$args=array();
 				login_failed(array(
-					'username' => $_POST['username'],
-					'password' => $_POST['password'],
-					'IP' => $_SERVER['REMOTE_ADDR']
+					'username' => isset($_POST['username']) ? $_POST['username'] : '',
+					'password' => isset($_POST['password']) ? $_POST['password'] : '',
+					'IP' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : ''
 					), $args);
 			}
 
 			if(!headers_sent()) header('HTTP/1.0 403 Forbidden');
 			redirect("index.php?loginFailed=1");
 			exit;
-		}elseif((!$_SESSION['memberID'] || $_SESSION['memberID']==$adminConfig['anonymousMember']) && $_COOKIE['Attendance_Management_System_rememberMe']!=''){
+		}elseif((empty($_SESSION['memberID']) || (isset($adminConfig['anonymousMember']) && $_SESSION['memberID']==$adminConfig['anonymousMember'])) && !empty($_COOKIE['Attendance_Management_System_rememberMe'])){
 			$chk=makeSafe($_COOKIE['Attendance_Management_System_rememberMe']);
 			if($username=sqlValue("select memberID from membership_users where convert(md5(concat(memberID, passMD5)), char)='$chk' and isBanned=0")){
 				$_SESSION['memberID']=$username;

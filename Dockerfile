@@ -22,9 +22,9 @@ RUN a2enmod rewrite headers
 
 # Configure PHP output buffering and error handling
 RUN echo "output_buffering = 4096" > /usr/local/etc/php/conf.d/custom-php.ini \
-    && echo "display_errors = On" >> /usr/local/etc/php/conf.d/custom-php.ini \
+    && echo "display_errors = Off" >> /usr/local/etc/php/conf.d/custom-php.ini \
     && echo "log_errors = On" >> /usr/local/etc/php/conf.d/custom-php.ini \
-    && echo "error_reporting = E_ALL & ~E_NOTICE & ~E_DEPRECATED" >> /usr/local/etc/php/conf.d/custom-php.ini
+    && echo "error_reporting = E_ALL & ~E_NOTICE & ~E_WARNING & ~E_DEPRECATED" >> /usr/local/etc/php/conf.d/custom-php.ini
 
 # Reverse proxy configurations: prevent internal port leaking in redirects
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf \
