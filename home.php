@@ -1,6 +1,7 @@
 <?php if(!isset($Translation)){ @header('Location: index.php'); exit; } ?>
 <?php include_once("{$currDir}/header.php"); ?>
 <?php @include("{$currDir}/hooks/links-home.php"); ?>
+<?php if(!isset($homeLinks) || !is_array($homeLinks)) $homeLinks = array(); ?>
 
 <?php
 	/*

@@ -1,7 +1,7 @@
 <?php if(!isset($Translation)){ @header('Location: index.php?signIn=1'); exit; } ?>
 <?php include_once("$currDir/header.php"); ?>
 
-<?php if($_GET['loginFailed']){ ?>
+<?php if(!empty($_GET['loginFailed'])){ ?>
 	<div class="alert alert-danger"><?php echo $Translation['login failed']; ?></div>
 <?php } ?>
 

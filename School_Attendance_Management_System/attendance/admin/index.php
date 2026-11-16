@@ -1,5 +1,6 @@
 <?php
-	error_reporting(E_ERROR | E_WARNING | E_PARSE);
+	error_reporting(E_ERROR | E_PARSE);
+	ini_set('display_errors', '0');
 	$base_url = getenv('BASE_URL');
 	if($base_url !== false && !empty($base_url)){
 		header("Location: " . rtrim($base_url, '/') . "/admin/pageHome.php");

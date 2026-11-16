@@ -4,3 +4,8 @@
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+node_modules/
+package-lock.json
+package.json
+.env
+import_aiven_db.js

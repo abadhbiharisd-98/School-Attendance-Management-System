@@ -335,7 +335,7 @@
 					</ul>
 				<?php } ?>
 
-				<?php if(!$_GET['signIn'] && !$_GET['loginFailed']){ ?>
+				<?php if(empty($_GET['signIn']) && empty($_GET['loginFailed'])){ ?>
 					<?php if(getLoggedMemberID() == $adminConfig['anonymousMember']){ ?>
 						<p class="navbar-text navbar-right">&nbsp;</p>
 						<a href="<?php echo PREPEND_PATH; ?>index.php?signIn=1" class="btn btn-success navbar-btn navbar-right"><?php echo $Translation['sign in']; ?></a>
@@ -397,25 +397,25 @@
 					'</script>'."\n";
 
 		if(!$msg){ // if no msg, use url to detect message to display
-			if($_REQUEST['record-added-ok'] != ''){
+			if(!empty($_REQUEST['record-added-ok'])){
 				$msg = $Translation['new record saved'];
 				$class = 'alert-success';
-			}elseif($_REQUEST['record-added-error'] != ''){
+			}elseif(!empty($_REQUEST['record-added-error'])){
 				$msg = $Translation['Couldn\'t save the new record'];
 				$class = 'alert-danger';
 				$fadeout = false;
-			}elseif($_REQUEST['record-updated-ok'] != ''){
+			}elseif(!empty($_REQUEST['record-updated-ok'])){
 				$msg = $Translation['record updated'];
 				$class = 'alert-success';
-			}elseif($_REQUEST['record-updated-error'] != ''){
+			}elseif(!empty($_REQUEST['record-updated-error'])){
 				$msg = $Translation['Couldn\'t save changes to the record'];
 				$class = 'alert-danger';
 				$fadeout = false;
-			}elseif($_REQUEST['record-deleted-ok'] != ''){
+			}elseif(!empty($_REQUEST['record-deleted-ok'])){
 				$msg = $Translation['The record has been deleted successfully'];
 				$class = 'alert-success';
 				$fadeout = false;
-			}elseif($_REQUEST['record-deleted-error'] != ''){
+			}elseif(!empty($_REQUEST['record-deleted-error'])){
 				$msg = $Translation['Couldn\'t delete this record'];
 				$class = 'alert-danger';
 				$fadeout = false;

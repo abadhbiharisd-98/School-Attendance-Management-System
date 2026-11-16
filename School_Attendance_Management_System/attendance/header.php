@@ -44,7 +44,7 @@
 		<div class="container theme-spacelab theme-compact">
 			<?php if(function_exists('handle_maintenance')) echo handle_maintenance(true); ?>
 
-			<?php if(!$_REQUEST['Embedded']){ ?>
+			<?php if(empty($_REQUEST['Embedded'])){ ?>
 				<?php if(function_exists('htmlUserBar')) echo htmlUserBar(); ?>
 				<div style="height: 70px;" class="hidden-print"></div>
 			<?php } ?>
@@ -52,7 +52,7 @@
 			<?php if(class_exists('Notification')) echo Notification::placeholder(); ?>
 
 			<!-- process notifications -->
-			<?php $notification_margin = ($_REQUEST['Embedded'] ? '15px 0px' : '-15px 0 -45px'); ?>
+			<?php $notification_margin = (!empty($_REQUEST['Embedded']) ? '15px 0px' : '-15px 0 -45px'); ?>
 			<div style="height: 60px; margin: <?php echo $notification_margin; ?>;">
 				<?php if(function_exists('showNotifications')) echo showNotifications(); ?>
 			</div>

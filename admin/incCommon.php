@@ -1,5 +1,6 @@
 <?php
-	error_reporting(E_ERROR | E_WARNING | E_PARSE);
+	error_reporting(E_ERROR | E_PARSE);
+	ini_set('display_errors', '0');
 
 	if(!defined('datalist_db_encoding')) define('datalist_db_encoding', 'UTF-8');
 	if(function_exists('set_magic_quotes_runtime')) @set_magic_quotes_runtime(0);
