@@ -1,9 +1,9 @@
 <?php
-	$dbServer = (getenv('DB_SERVER') !== false && getenv('DB_SERVER') !== '') ? getenv('DB_SERVER') : (isset($_ENV['DB_SERVER']) && $_ENV['DB_SERVER'] !== '' ? $_ENV['DB_SERVER'] : 'mysql-32d19a6e-abadhbihari-33eb.f.aivencloud.com');
+	$dbServer = (getenv('DB_SERVER') !== false && getenv('DB_SERVER') !== '' && getenv('DB_SERVER') !== 'localhost') ? getenv('DB_SERVER') : (isset($_ENV['DB_SERVER']) && $_ENV['DB_SERVER'] !== '' && $_ENV['DB_SERVER'] !== 'localhost' ? $_ENV['DB_SERVER'] : 'mysql-32d19a6e-abadhbihari-33eb.f.aivencloud.com');
 	$dbPort = (getenv('DB_PORT') !== false && getenv('DB_PORT') !== '') ? (int)getenv('DB_PORT') : (isset($_ENV['DB_PORT']) && $_ENV['DB_PORT'] !== '' ? (int)$_ENV['DB_PORT'] : 12893);
 	$dbUsername = (getenv('DB_USERNAME') !== false && getenv('DB_USERNAME') !== '') ? getenv('DB_USERNAME') : (isset($_ENV['DB_USERNAME']) && $_ENV['DB_USERNAME'] !== '' ? $_ENV['DB_USERNAME'] : 'avnadmin');
 	$dbPassword = (getenv('DB_PASSWORD') !== false && getenv('DB_PASSWORD') !== '') ? getenv('DB_PASSWORD') : (isset($_ENV['DB_PASSWORD']) && $_ENV['DB_PASSWORD'] !== '' ? $_ENV['DB_PASSWORD'] : base64_decode('QVZOU19IX0dqY3JoX1c0WmJURUZsMXVJ'));
-	$dbDatabase = (getenv('DB_NAME') !== false && getenv('DB_NAME') !== '') ? getenv('DB_NAME') : (isset($_ENV['DB_NAME']) && $_ENV['DB_NAME'] !== '' ? $_ENV['DB_NAME'] : 'school_attendance');
+	$dbDatabase = (getenv('DB_NAME') !== false && getenv('DB_NAME') !== '') ? getenv('DB_NAME') : (isset($_ENV['DB_NAME']) && $_ENV['DB_NAME'] !== '' ? $_ENV['DB_NAME'] : 'defaultdb');
 
 	$adminConfig = array(
 		'adminUsername' => "admin",

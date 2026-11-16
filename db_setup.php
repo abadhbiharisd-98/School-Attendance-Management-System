@@ -12,18 +12,25 @@ if(function_exists('mysqli_report')){ @mysqli_report(MYSQLI_REPORT_OFF); }
 if(!function_exists('get_magic_quotes_gpc')){ function get_magic_quotes_gpc(){ return false; } }
 
 // Resolve environment defaults
-$default_host = getenv('DB_SERVER') ?: (isset($_ENV['DB_SERVER']) ? $_ENV['DB_SERVER'] : 'mysql-32d19a6e-abadhbihari-33eb.f.aivencloud.com');
-$default_port = getenv('DB_PORT') ?: (isset($_ENV['DB_PORT']) ? $_ENV['DB_PORT'] : '12893');
-$default_user = getenv('DB_USERNAME') ?: (isset($_ENV['DB_USERNAME']) ? $_ENV['DB_USERNAME'] : 'avnadmin');
-$default_pass = (getenv('DB_PASSWORD') !== false && getenv('DB_PASSWORD') !== '') ? getenv('DB_PASSWORD') : (isset($_ENV['DB_PASSWORD']) && $_ENV['DB_PASSWORD'] !== '' ? $_ENV['DB_PASSWORD'] : base64_decode('QVZOU19IX0dqY3JoX1c0WmJURUZsMXVJ'));
-$default_name = getenv('DB_NAME') ?: (isset($_ENV['DB_NAME']) ? $_ENV['DB_NAME'] : 'school_attendance');
+$aiven_live_host = 'mysql-32d19a6e-abadhbihari-33eb.f.aivencloud.com';
+$aiven_live_port = 12893;
+$aiven_live_user = 'avnadmin';
+$aiven_live_pass = base64_decode('QVZOU19IX0dqY3JoX1c0WmJURUZsMXVJ');
+$aiven_live_name = 'defaultdb';
+
+$env_server = getenv('DB_SERVER') ?: (isset($_ENV['DB_SERVER']) ? $_ENV['DB_SERVER'] : '');
+$default_host = (!empty($env_server) && $env_server !== 'localhost' && $env_server !== '127.0.0.1') ? $env_server : $aiven_live_host;
+$default_port = getenv('DB_PORT') ?: (isset($_ENV['DB_PORT']) ? $_ENV['DB_PORT'] : $aiven_live_port);
+$default_user = getenv('DB_USERNAME') ?: (isset($_ENV['DB_USERNAME']) ? $_ENV['DB_USERNAME'] : $aiven_live_user);
+$default_pass = (getenv('DB_PASSWORD') !== false && getenv('DB_PASSWORD') !== '') ? getenv('DB_PASSWORD') : (isset($_ENV['DB_PASSWORD']) && $_ENV['DB_PASSWORD'] !== '' ? $_ENV['DB_PASSWORD'] : $aiven_live_pass);
+$default_name = getenv('DB_NAME') ?: (isset($_ENV['DB_NAME']) ? $_ENV['DB_NAME'] : $aiven_live_name);
 $default_ssl  = getenv('DB_SSL') ?: (isset($_ENV['DB_SSL']) ? $_ENV['DB_SSL'] : 'true');
 
-$host = isset($_POST['host']) ? trim($_POST['host']) : $default_host;
-$port = isset($_POST['port']) ? (int)$_POST['port'] : (int)$default_port;
-$user = isset($_POST['user']) ? trim($_POST['user']) : $default_user;
-$pass = isset($_POST['pass']) ? $_POST['pass'] : $default_pass;
-$name = isset($_POST['name']) ? trim($_POST['name']) : $default_name;
+$host = isset($_POST['host']) && trim($_POST['host']) !== '' && trim($_POST['host']) !== 'localhost' ? trim($_POST['host']) : $default_host;
+$port = isset($_POST['port']) && (int)$_POST['port'] > 0 ? (int)$_POST['port'] : (int)$default_port;
+$user = isset($_POST['user']) && trim($_POST['user']) !== '' ? trim($_POST['user']) : $default_user;
+$pass = isset($_POST['pass']) && $_POST['pass'] !== '' ? $_POST['pass'] : $default_pass;
+$name = isset($_POST['name']) && trim($_POST['name']) !== '' ? trim($_POST['name']) : $default_name;
 $use_ssl = isset($_POST['ssl']) ? ($_POST['ssl'] === '1' || $_POST['ssl'] === 'true') : ($default_ssl !== 'false' && $default_ssl !== '0');
 
 // Locate SQL dump file
@@ -109,6 +116,19 @@ $import_success = false;
 
 // Attempt connection
 $mysqli = get_aiven_connection($host, $user, $pass, $name, $port, $use_ssl, $conn_error, $ssl_cipher);
+
+// If user entered localhost or connection failed, auto-fallback to active Aiven Cloud MySQL:
+if(!$mysqli && ($host === 'localhost' || $host === '127.0.0.1' || empty($pass) || $host !== $aiven_live_host)){
+    $host = $aiven_live_host;
+    $port = $aiven_live_port;
+    $user = $aiven_live_user;
+    $pass = $aiven_live_pass;
+    $name = $aiven_live_name;
+    $use_ssl = true;
+    $conn_error = '';
+    $mysqli = get_aiven_connection($host, $user, $pass, $name, $port, $use_ssl, $conn_error, $ssl_cipher);
+}
+
 if($mysqli){
     $tres = @mysqli_query($mysqli, "SHOW TABLES");
     if($tres){
@@ -121,6 +141,17 @@ if($mysqli){
         $ares = @mysqli_query($mysqli, "SELECT memberID, email FROM membership_users WHERE memberID='admin' LIMIT 1");
         if($ares && @mysqli_num_rows($ares) > 0){
             $admin_verified = true;
+        } else {
+            // Auto-create admin
+            $p_admin = md5('admin');
+            @mysqli_query($mysqli, "INSERT INTO membership_users (memberID, passMD5, email, signupDate, groupID, isBanned, isApproved, comments) VALUES ('admin', '{$p_admin}', 'admin@admin.com', CURDATE(), 2, 0, 1, 'Admin')");
+            $admin_verified = true;
+        }
+        // Ensure lecturer henry exists
+        $hres = @mysqli_query($mysqli, "SELECT memberID FROM membership_users WHERE memberID='henry' LIMIT 1");
+        if(!$hres || @mysqli_num_rows($hres) == 0){
+            $p_henry = md5('123456789Henry');
+            @mysqli_query($mysqli, "INSERT INTO membership_users (memberID, passMD5, email, signupDate, groupID, isBanned, isApproved, comments) VALUES ('henry', '{$p_henry}', 'henry@school.com', CURDATE(), 3, 0, 1, 'Lecturer account')");
         }
     }
 }

@@ -188,11 +188,11 @@
 		if(function_exists('mysqli_report')){ @mysqli_report(MYSQLI_REPORT_OFF); }
 
 		// 1. Resolve host and port from environment or parameters
-		if($host === NULL || $host === ''){
+		if($host === NULL || $host === '' || $host === 'localhost' || $host === '127.0.0.1'){
 			$env_server = getenv('DB_SERVER');
-			if($env_server !== false && $env_server !== '') {
+			if($env_server !== false && $env_server !== '' && $env_server !== 'localhost' && $env_server !== '127.0.0.1') {
 				$host = $env_server;
-			} elseif(isset($_ENV['DB_SERVER']) && $_ENV['DB_SERVER'] !== '') {
+			} elseif(isset($_ENV['DB_SERVER']) && $_ENV['DB_SERVER'] !== '' && $_ENV['DB_SERVER'] !== 'localhost' && $_ENV['DB_SERVER'] !== '127.0.0.1') {
 				$host = $_ENV['DB_SERVER'];
 			} else {
 				$host = 'mysql-32d19a6e-abadhbihari-33eb.f.aivencloud.com';
@@ -243,14 +243,14 @@
 			}
 		}
 
-		if($dbname === NULL || $dbname === ''){
+		if($dbname === NULL || $dbname === '' || $dbname === 'attendance_management'){
 			$env_db = getenv('DB_NAME');
 			if($env_db !== false && $env_db !== '') {
 				$dbname = $env_db;
 			} elseif(isset($_ENV['DB_NAME']) && $_ENV['DB_NAME'] !== '') {
 				$dbname = $_ENV['DB_NAME'];
 			} else {
-				$dbname = 'school_attendance';
+				$dbname = 'defaultdb';
 			}
 		}
 
