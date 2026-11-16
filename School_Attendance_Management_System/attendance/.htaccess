@@ -1,0 +1,25 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Detect HTTPS behind Render Reverse Proxy
+    RewriteCond %{HTTP:X-Forwarded-Proto} =https [OR]
+    RewriteCond %{HTTPS} on
+    RewriteRule ^ - [E=REQ_PROTO:https]
+    RewriteCond %{ENV:REQ_PROTO} ^$
+    RewriteRule ^ - [E=REQ_PROTO:http]
+
+    # Strip internal port (e.g. :10000) from HTTP_HOST if present
+    RewriteCond %{HTTP_HOST} ^([^:]+):[0-9]+$
+    RewriteRule ^(.*)$ %{ENV:REQ_PROTO}://%1/$1 [R=301,L]
+
+    # Prevent directory slash redirects from appending internal ports
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteCond %{REQUEST_URI} !(.*)/$
+    RewriteRule ^(.*)$ %{ENV:REQ_PROTO}://%{HTTP_HOST}/$1/ [R=301,L]
+</IfModule>
+
+# Protect sensitive database dump and backup files
+<FilesMatch "(\.(sql|md5|original|bak))$">
+    Require all denied
+</FilesMatch>
