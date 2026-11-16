@@ -7,7 +7,8 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Polyfills
+// Polyfills & MySQLi Error Mode
+if(function_exists('mysqli_report')){ @mysqli_report(MYSQLI_REPORT_OFF); }
 if(!function_exists('get_magic_quotes_gpc')){ function get_magic_quotes_gpc(){ return false; } }
 
 // Resolve environment defaults
@@ -42,59 +43,62 @@ foreach($possible_sql_paths as $p){
 
 // Database Connection Helper
 function get_aiven_connection($host, $user, $pass, $name, $port, $use_ssl, &$error_msg, &$ssl_cipher){
-    $link = mysqli_init();
-    if(!$link){
-        $error_msg = "mysqli_init() failed.";
-        return false;
-    }
-    @mysqli_options($link, MYSQLI_OPT_CONNECT_TIMEOUT, 15);
-    
-    // Parse host:port if user pasted host with port
-    if(strpos($host, ':') !== false){
-        list($h, $p) = explode(':', $host, 2);
-        $host = $h;
-        if(is_numeric($p)) $port = (int)$p;
-    }
+    if(function_exists('mysqli_report')){ @mysqli_report(MYSQLI_REPORT_OFF); }
+    try {
+        $link = @mysqli_init();
+        if(!$link){
+            $error_msg = "mysqli_init() failed.";
+            return false;
+        }
+        @mysqli_options($link, MYSQLI_OPT_CONNECT_TIMEOUT, 15);
+        
+        // Parse host:port if user pasted host with port
+        if(strpos($host, ':') !== false){
+            list($h, $p) = explode(':', $host, 2);
+            $host = $h;
+            if(is_numeric($p)) $port = (int)$p;
+        }
 
-    $connected = false;
-    if($use_ssl && defined('MYSQLI_CLIENT_SSL')){
-        $connected = @mysqli_real_connect($link, $host, $user, $pass, $name, (int)$port, NULL, MYSQLI_CLIENT_SSL);
-        if(!$connected){
-            // Try connecting without db first if db does not exist yet
-            $connected = @mysqli_real_connect($link, $host, $user, $pass, '', (int)$port, NULL, MYSQLI_CLIENT_SSL);
-            if($connected && $name !== ''){
-                @mysqli_query($link, "CREATE DATABASE IF NOT EXISTS `" . mysqli_real_escape_string($link, $name) . "`");
-                @mysqli_select_db($link, $name);
+        $connected = false;
+        if($use_ssl && defined('MYSQLI_CLIENT_SSL')){
+            $connected = @mysqli_real_connect($link, $host, $user, $pass, $name, (int)$port, NULL, MYSQLI_CLIENT_SSL);
+            if(!$connected){
+                $connected = @mysqli_real_connect($link, $host, $user, $pass, '', (int)$port, NULL, MYSQLI_CLIENT_SSL);
+                if($connected && $name !== ''){
+                    @mysqli_query($link, "CREATE DATABASE IF NOT EXISTS `" . mysqli_real_escape_string($link, $name) . "`");
+                    @mysqli_select_db($link, $name);
+                }
+            }
+        } else {
+            $connected = @mysqli_real_connect($link, $host, $user, $pass, $name, (int)$port);
+            if(!$connected){
+                $connected = @mysqli_real_connect($link, $host, $user, $pass, '', (int)$port);
+                if($connected && $name !== ''){
+                    @mysqli_query($link, "CREATE DATABASE IF NOT EXISTS `" . mysqli_real_escape_string($link, $name) . "`");
+                    @mysqli_select_db($link, $name);
+                }
             }
         }
-    } else {
-        $connected = @mysqli_real_connect($link, $host, $user, $pass, $name, (int)$port);
-        if(!$connected){
-            $connected = @mysqli_real_connect($link, $host, $user, $pass, '', (int)$port);
-            if($connected && $name !== ''){
-                @mysqli_query($link, "CREATE DATABASE IF NOT EXISTS `" . mysqli_real_escape_string($link, $name) . "`");
-                @mysqli_select_db($link, $name);
-            }
-        }
-    }
 
-    if(!$connected){
-        $error_msg = mysqli_connect_error() ?: "Could not connect to MySQL server at {$host}:{$port}";
+        if(!$connected){
+            $error_msg = mysqli_connect_error() ?: "Could not connect to MySQL server at {$host}:{$port}";
+            return false;
+        }
+
+        $res = @mysqli_query($link, "SHOW STATUS LIKE 'Ssl_cipher'");
+        if($res && ($row = @mysqli_fetch_row($res))){
+            $ssl_cipher = $row[1] ?: 'None (Plaintext)';
+        } else {
+            $ssl_cipher = 'Unknown';
+        }
+
+        @mysqli_set_charset($link, 'utf8');
+        return $link;
+    } catch (Throwable $e) {
+        $error_msg = $e->getMessage() ?: "Could not connect to MySQL server at {$host}:{$port}";
         return false;
     }
-
-    // Check SSL status
-    $res = @mysqli_query($link, "SHOW STATUS LIKE 'Ssl_cipher'");
-    if($res && ($row = @mysqli_fetch_row($res))){
-        $ssl_cipher = $row[1] ?: 'None (Plaintext)';
-    } else {
-        $ssl_cipher = 'Unknown';
-    }
-
-    @mysqli_set_charset($link, 'utf8');
-    return $link;
 }
-
 $conn_error = '';
 $ssl_cipher = '';
 $mysqli = false;

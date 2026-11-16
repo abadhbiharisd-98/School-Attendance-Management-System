@@ -8,6 +8,7 @@
 	*/
 
 	// PHP 8 Compatibility Polyfills
+	if(function_exists('mysqli_report')){ @mysqli_report(MYSQLI_REPORT_OFF); }
 	if(!function_exists('get_magic_quotes_gpc')){
 		function get_magic_quotes_gpc(){ return false; }
 	}
@@ -259,7 +260,8 @@
 			$use_ssl = false;
 		}
 
-		switch(DATABASE){
+		try {
+			switch(DATABASE){
 			case 'mysql':
 				$link = @mysql_connect(($port && $port != 3306 ? "$host:$port" : $host), $username, $passwd);
 				if(!$link) return false;
@@ -297,6 +299,10 @@
 		}
 	}
 
+		} catch (Throwable $e) {
+			return false;
+		}
+	}
 	function db_errno($link = NULL, $mysqli_connect = false){
 		if(!$link) $link = db_link();
 		switch(DATABASE){

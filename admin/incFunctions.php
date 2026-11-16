@@ -1,4 +1,5 @@
 <?php
+	if(function_exists('mysqli_report')){ @mysqli_report(MYSQLI_REPORT_OFF); }
 	########################################################################
 	/*
 	~~~~~~ LIST OF FUNCTIONS ~~~~~~
