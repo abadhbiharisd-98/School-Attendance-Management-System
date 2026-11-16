@@ -35,7 +35,7 @@ A robust, web-based School Attendance Management System upgraded for **PHP 8.2**
 | `DB_PORT` | `12893` |
 | `DB_USERNAME` | `avnadmin` |
 | `DB_PASSWORD` | *(Configured via Render Environment Variables / Auto-configured)* |
-| `DB_NAME` | `school_attendance` |
+| `DB_NAME` | `defaultdb` *(25 tables verified)* |
 | `DB_SSL` | `true` *(Enforced by Aiven)* |
 | `BASE_URL` | `https://school-attendance-management-system-483x.onrender.com` |
 

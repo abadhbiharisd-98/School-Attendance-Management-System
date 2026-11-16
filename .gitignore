@@ -9,3 +9,5 @@ package-lock.json
 package.json
 .env
 import_aiven_db.js
+README.txt
+CREDENTIALS.txt
