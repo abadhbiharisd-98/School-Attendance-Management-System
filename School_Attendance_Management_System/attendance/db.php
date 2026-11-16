@@ -184,7 +184,9 @@
 		}
 	}
 
-	function db_connect($host = NULL, $username = NULL, $passwd = NULL, $dbname = NULL, $port = NULL, $socket = NULL){
+		function db_connect($host = NULL, $username = NULL, $passwd = NULL, $dbname = NULL, $port = NULL, $socket = NULL){
+		if(function_exists('mysqli_report')){ @mysqli_report(MYSQLI_REPORT_OFF); }
+
 		// 1. Resolve host and port from environment or parameters
 		if($host === NULL || $host === ''){
 			$env_server = getenv('DB_SERVER');
@@ -262,47 +264,47 @@
 
 		try {
 			switch(DATABASE){
-			case 'mysql':
-				$link = @mysql_connect(($port && $port != 3306 ? "$host:$port" : $host), $username, $passwd);
-				if(!$link) return false;
-				db_link($link);
-				@mysql_query("SET NAMES '" . mysql_charset . "'");
-				if($dbname){ if(!@mysql_select_db($dbname, $link)) return false; }
-				return $link;
+				case 'mysql':
+					$link = @mysql_connect(($port && $port != 3306 ? "$host:$port" : $host), $username, $passwd);
+					if(!$link) return false;
+					db_link($link);
+					@mysql_query("SET NAMES '" . mysql_charset . "'");
+					if($dbname){ if(!@mysql_select_db($dbname, $link)) return false; }
+					return $link;
 
-			case 'mysqli':
-				$link = mysqli_init();
-				if(!$link) return false;
+				case 'mysqli':
+					$link = @mysqli_init();
+					if(!$link) return false;
 
-				if(defined('MYSQLI_OPT_CONNECT_TIMEOUT')){
-					@mysqli_options($link, MYSQLI_OPT_CONNECT_TIMEOUT, 15);
-				}
+					if(defined('MYSQLI_OPT_CONNECT_TIMEOUT')){
+						@mysqli_options($link, MYSQLI_OPT_CONNECT_TIMEOUT, 15);
+					}
 
-				$connected = false;
+					$connected = false;
 
-				// Try connecting with SSL flag (Required by Aiven Cloud MySQL)
-				if($use_ssl && defined('MYSQLI_CLIENT_SSL')){
-					$connected = @mysqli_real_connect($link, $host, $username, $passwd, $dbname, $port, $socket, MYSQLI_CLIENT_SSL);
-					if(!$connected){
-						// Fallback without SSL if target is local non-SSL MySQL
+					// Try connecting with SSL flag (Required by Aiven Cloud MySQL)
+					if($use_ssl && defined('MYSQLI_CLIENT_SSL')){
+						$connected = @mysqli_real_connect($link, $host, $username, $passwd, $dbname, $port, $socket, MYSQLI_CLIENT_SSL);
+						if(!$connected){
+							// Fallback without SSL if target is local non-SSL MySQL
+							$connected = @mysqli_real_connect($link, $host, $username, $passwd, $dbname, $port, $socket);
+						}
+					} else {
 						$connected = @mysqli_real_connect($link, $host, $username, $passwd, $dbname, $port, $socket);
 					}
-				} else {
-					$connected = @mysqli_real_connect($link, $host, $username, $passwd, $dbname, $port, $socket);
-				}
 
-				if(!$connected) return false;
+					if(!$connected) return false;
 
-				db_link($link);
-				@mysqli_set_charset($link, mysql_charset);
-				return $link;
-		}
-	}
-
+					db_link($link);
+					@mysqli_set_charset($link, mysql_charset);
+					return $link;
+			}
 		} catch (Throwable $e) {
 			return false;
 		}
 	}
+
+
 	function db_errno($link = NULL, $mysqli_connect = false){
 		if(!$link) $link = db_link();
 		switch(DATABASE){
