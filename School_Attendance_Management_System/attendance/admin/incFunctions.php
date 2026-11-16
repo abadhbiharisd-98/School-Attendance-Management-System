@@ -1,5 +1,6 @@
 <?php
 	if(function_exists('mysqli_report')){ @mysqli_report(MYSQLI_REPORT_OFF); }
+	if(!defined('PREPEND_PATH')) define('PREPEND_PATH', '');
 	########################################################################
 	/*
 	~~~~~~ LIST OF FUNCTIONS ~~~~~~
@@ -1122,7 +1123,7 @@
 
 					/* load cookies library */
 					$j.ajax({
-						url: '<?php echo PREPEND_PATH; ?>resources/jscookie/js.cookie.js',
+						url: '<?php echo (defined('PREPEND_PATH') ? PREPEND_PATH : ''); ?>resources/jscookie/js.cookie.js',
 						dataType: 'script',
 						cache: true,
 						success: function(){ window.notifications_ready = true; }

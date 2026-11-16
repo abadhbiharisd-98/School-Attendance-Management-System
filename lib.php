@@ -17,6 +17,7 @@ if(!function_exists('set_magic_quotes_runtime')){
 	function set_magic_quotes_runtime($new_setting){ return false; }
 }
 
+if(!defined('PREPEND_PATH')) define('PREPEND_PATH', '');
 if(!defined('datalist_db_encoding')) define('datalist_db_encoding', 'UTF-8');
 if(!defined('maxSortBy')) define('maxSortBy', 4);
 if(!defined('empty_lookup_value')) define('empty_lookup_value', '{empty_value}');
